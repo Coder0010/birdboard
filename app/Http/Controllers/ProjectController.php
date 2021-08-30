@@ -30,11 +30,7 @@ class ProjectController extends Controller
      */
     public function store(ProjectRequest $request)
     {
-        $attributes = array_merge($request->all(),[
-            // 'user_id' => auth()->id()
-        ]);
-
-        Project::create($attributes);
+        auth()->user()->projects()->create($request->all());
         return redirect()->route('projects.index');
     }
 
@@ -58,7 +54,10 @@ class ProjectController extends Controller
      */
     public function update(ProjectRequest $request, Project $project)
     {
-        //
+        $this->authorize('update', $project);
+
+        $project->update($request->all());
+        return redirect()->route('projects.show', $project);
     }
 
     /**
@@ -69,6 +68,8 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        //
+        $project->delete();
+
+        return redirect("/tasks");
     }
 }
