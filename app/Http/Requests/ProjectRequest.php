@@ -23,10 +23,18 @@ class ProjectRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'title'       => 'required|string',
-            'description' => 'required|string',
-            'user_id'     => 'required|integer|exists:users,id',
-        ];
+        if (request()->isMethod("post")) {
+            return [
+                'title'       => 'required|string',
+                'description' => 'required|string',
+                'notes'       => 'sometimes|nullable',
+            ];
+        }elseif (request()->isMethod("patch")) {
+            return [
+                'title'       => 'required|string',
+                'description' => 'required|string',
+                'notes'       => 'required|string',
+            ];
+        }
     }
 }

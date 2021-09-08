@@ -14,11 +14,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('home');
 });
 
 Auth::routes();
 
 Route::get('home', 'HomeController@index')->name('home');
 
-Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
+Route::resource('projects', 'ProjectController');
+
+Route::post('projects/{project}/tasks', 'TaskController@store')->name('tasks.store');
+Route::patch('projects/{project}/tasks/{task}', 'TaskController@update')->name('tasks.update');

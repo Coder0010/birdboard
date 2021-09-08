@@ -48,6 +48,6 @@ class User extends Authenticatable
      */
     public function projects() : HasMany
     {
-        return $this->hasMany(Project::class);
+        return $this->hasMany(Project::class)->latest('updated_at');
     }
 }

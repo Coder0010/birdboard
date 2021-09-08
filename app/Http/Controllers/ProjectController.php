@@ -19,7 +19,17 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        return view('projects.index', ['projects' => Project::all()]);
+        return view('projects.index', ['projects' => auth()->user()->projects]);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        return view('projects.create');
     }
 
     /**
@@ -30,8 +40,8 @@ class ProjectController extends Controller
      */
     public function store(ProjectRequest $request)
     {
-        auth()->user()->projects()->create($request->all());
-        return redirect()->route('projects.index');
+        $project = auth()->user()->projects()->create($request->all());
+        return redirect()->route('projects.show', $project);
     }
 
     /**
@@ -46,6 +56,19 @@ class ProjectController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Project  $project
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Project $project)
+    {
+        $this->authorize('update', $project);
+
+        return view('projects.edit', ['project' => $project]);
+    }
+
+    /**
      * Update the specified resource in storage.
      *
      * @param  App\Http\Requests\ProjectRequest  $request
@@ -57,6 +80,7 @@ class ProjectController extends Controller
         $this->authorize('update', $project);
 
         $project->update($request->all());
+
         return redirect()->route('projects.show', $project);
     }
 
@@ -70,6 +94,6 @@ class ProjectController extends Controller
     {
         $project->delete();
 
-        return redirect("/tasks");
+        return redirect()->route("projects.show", $project);
     }
 }

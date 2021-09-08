@@ -5,42 +5,29 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Project;
+use Facades\Tests\Setup\ProjectSetupFactory;
 use App\Http\Requests\ProjectRequest;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProjectsTest extends TestCase
 {
-    use RefreshDatabase;
-
-    private $model = Project::class;
 
     /** @test */
-    public function creating_raw_required_authentication()
+    public function geusts_cannot_manage_projects()
     {
-        $attributes = $this->model::factory()->raw();
+        $attributes = Project::factory();
 
-        $this->post(route("projects.store"), $attributes)
-            ->assertRedirect(route("login"));
+        $this->get(route("projects.index"))->assertRedirect(route("login"));
+        $this->get(route("projects.create"))->assertRedirect(route("login"));
+        $this->get(route("projects.show", $attributes->create()))->assertRedirect(route("login"));
+        $this->post(route("projects.store"), $attributes->raw())->assertRedirect(route("login"));
     }
 
     /** @test */
-    public function expected_validation_create_rules()
+    public function creating_project_require_a_title_and_description()
     {
-        $request = new ProjectRequest();
+        $this->signIn();
 
-        $this->assertEquals([
-            "title"       => "required|string",
-            "description" => "required|string",
-            "user_id"     => "required|integer|exists:users,id",
-        ], $request->rules());
-    }
-
-    /** @test */
-    public function creating_raw_require_a_title_and_description()
-    {
-        $this->actingAs(User::factory()->create());
-
-        $attributes = $this->model::factory()->raw([
+        $attributes = Project::factory()->raw([
             "title"       => "",
             "description" => "",
         ]);
@@ -51,94 +38,97 @@ class ProjectsTest extends TestCase
     }
 
     /** @test */
-    public function authenticated_user_can_create_a_raw()
+    public function authenticated_user_can_create_a_project()
     {
         $this->withoutExceptionHandling();
 
-        $this->actingAs(User::factory()->create());
+        // $this->signIn();
 
-        $attributes = $this->model::factory()->raw([
-            "user_id" => auth()->id()
-        ]);
+        // $this->get(route("projects.create"))->assertStatus(200);
 
-        $this->post(route("projects.store"), $attributes)
-            ->assertRedirect(route("projects.index"));
+        // $attributes = Project::factory()->raw([
+        //     "user_id" => auth()->id(),
+        // ]);
 
-        $this->assertDatabaseHas("projects", $attributes);
-        $this->get(route("projects.index"))->assertSee($attributes["title"]);
+        // $this->post(route("projects.store"), $attributes);
 
-    }
+        $project = ProjectSetupFactory::ownedBy($this->signIn())->create();
 
-    /** @test */
-    public function authenticated_user_can_show_a_raw()
-    {
-        $this->actingAs(User::factory()->create());
+        $this
+            ->get(route("projects.create"))->assertStatus(200);
 
-        $attributes = $this->model::factory()->create();
-
-        $this->get(route("projects.show", $attributes->id))
-            ->assertSee($attributes->title)
-            ->assertSee($attributes->description);
-    }
-
-    /** @test */
-    public function editing_raw_require_a_title_and_description()
-    {
-        $this->actingAs(User::factory()->create());
-
-        $attributes = $this->model::factory()->create([
-            "user_id" => auth()->id(),
-        ]);
-
-        $attributes->title       = "";
-        $attributes->description = "";
-
-        $this->put(route("projects.update", $attributes), $attributes->toArray())
-            ->assertSessionHasErrors("title")
-            ->assertSessionHasErrors("description");
-    }
-
-    /** @test */
-    public function authenticated_user_can_edit_a_raw()
-    {
-        // $this->withoutExceptionHandling();
-
-        $this->actingAs(User::factory()->create());
-
-        $attributes = $this->model::factory()->create([
-            "user_id" => auth()->id(),
-        ]);
-
-        $attributes->title       = "updated title";
-        $attributes->description = "updated description";
-
-        $this->put(route("projects.update", $attributes), $attributes->toArray())
-            ->assertRedirect(route("projects.show", $attributes));
-
-        $this->assertDatabaseHas("projects", [
-            "title"       => "updated title",
-            "description" => "updated description",
-        ]);
-
-    }
-
-    /** @test */
-    public function authenticated_user_can_delete_a_raw()
-    {
-        // $this->withoutExceptionHandling();
-
-        $this->actingAs(User::factory()->create());
-
-        $attributes = $this->model::factory()->create([
-            "user_id" => auth()->id(),
-        ]);
-
-        $this->delete(route("projects.destroy", $attributes), $attributes->toArray())
+        $this->get(route("projects.show", $project))
+            ->assertSee($project["title"])
+            ->assertSee($project["description"])
+            ->assertSee($project["notes"])
             ;
 
-        $this->assertDatabaseMissing("projects", [
-            "id" => $attributes->id,
-        ]);
+    }
+
+    /** @test */
+    public function authenticated_user_can_show_a_project()
+    {
+        $project = ProjectSetupFactory::ownedBy($this->signIn())->create();
+
+        $this
+            ->get(route("projects.show", $project))
+            ->assertSee($project->title)
+            ->assertSee($project->description);
+    }
+
+    /** @test */
+    public function editing_project_require_a_title_and_description()
+    {
+        // $this->signIn();
+
+        // $attributes = Project::factory()->create([
+        //     "user_id" => auth()->id(),
+        // ]);
+
+        $project = ProjectSetupFactory::ownedBy($this->signIn())->create();
+
+        $project->notes  = "";
+
+        $this->patch(route("projects.update", $project), $project->toArray())
+            ->assertSessionHasErrors("notes");
+    }
+
+    /** @test */
+    public function authenticated_user_can_edit_a_project()
+    {
+        // $this->withoutExceptionHandling();
+
+        $project = ProjectSetupFactory::ownedBy($this->signIn())->create();
+
+        $this
+            ->get(route("projects.edit", $project))->assertStatus(200);
+
+        $attributes = [
+            "notes" => "updated notes"
+        ];
+
+        $this
+            ->patch(route("projects.update", $project), $attributes)
+            ->assertRedirect(route("projects.show", $project));
+
+    }
+
+    /** @test */
+    public function authenticated_user_can_delete_a_project()
+    {
+        // $this->withoutExceptionHandling();
+
+        // $this->signIn();
+
+        // $attributes = Project::factory()->create([
+        //     "user_id" => auth()->id(),
+        // ]);
+
+        $project = ProjectSetupFactory::ownedBy($this->signIn())->create();
+
+        $this->delete(route("projects.destroy", $project));
+
+        $this->assertDeleted("projects", $project->toArray());
 
     }
 
