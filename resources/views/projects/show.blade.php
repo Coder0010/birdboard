@@ -26,8 +26,11 @@
                                 @csrf
 
                                 <div class="flex">
-                                    <input name="body" value="{{ $task->body }}" class="w-full {{ $task->completed ? 'text-grey' : '' }}" {{ $task->completed ? 'disabled' : '' }}>
-                                    <input name="completed" type="checkbox" value="{{ $task->completed }}" onChange="this.form.submit()" {{ $task->completed ? 'checked' : '' }}>
+                                    <input name="body" type="text" value="{{ $task->body }}" class="w-full">
+                                    <input name="completed" type="checkbox"
+                                        {{ $task->completed ? 'checked' : '' }}
+                                        onChange="this.form.submit()"
+                                        >
                                 </div>
                             </form>
                         </div>
@@ -56,21 +59,15 @@
                             style="min-height: 200px"
                             placeholder="Anything special that you want to make a note of?"
                         >{{ $project->notes }}</textarea>
-
                         <button type="submit" class="button">Save</button>
                     </form>
-                    @if ($errors->{ $bag ?? 'default' }->any())
-                        <ul class="field mt-6 list-reset">
-                            @foreach ($errors->{ $bag ?? 'default' }->all() as $error)
-                                <li class="text-sm text-red">{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    @endif
+                    @include("errors")
                 </div>
             </div>
 
             <div class="lg:w-1/4 px-3 lg:py-8">
                 @include ('projects.card')
+                @include ('activities')
             </div>
         </div>
     </main>

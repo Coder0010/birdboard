@@ -82,12 +82,14 @@ class TaskController extends Controller
 
         request()->validate([
             'body'      => 'sometimes|string',
-            'completed' => 'sometimes|boolean'
+            'completed' => 'sometimes|nullable'
         ]);
         $task->update([
-            'body'      => request('body'),
-            'completed' => request()->has('completed'),
+            'body' => request('body'),
         ]);
+
+        request('completed') ? $task->completed() : $task->inComplete();
+
         return redirect()->route('projects.show', $project);
     }
 

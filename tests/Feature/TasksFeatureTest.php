@@ -9,7 +9,7 @@ use Facades\Tests\Setup\ProjectSetupFactory;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class TasksTest extends TestCase
+class TasksFeatureTest extends TestCase
 {
 
     /** @test */
@@ -48,12 +48,35 @@ class TasksTest extends TestCase
 
         $attributes = [
             "body"      => "changed",
+        ];
+
+        $this
+            ->actingAs($project->user)
+            ->patch(route("tasks.update", [$project, $project->tasks->last()]), $attributes);
+
+        $this->assertDatabaseHas("tasks", $attributes);
+    }
+
+    /** @test */
+    public function task_can_be_completed()
+    {
+        // $this->signIn();
+
+        // $project = auth()->user()->projects()->create(
+        //     Project::factory()->raw()
+        // );
+
+        // $task = $project->addTask("test task");
+
+        $project = ProjectSetupFactory::withTasks(1)->create();
+
+        $attributes = [
             "completed" => true,
         ];
 
         $this
             ->actingAs($project->user)
-            ->patch(route("tasks.update", [$project, $project->tasks[0]]), $attributes);
+            ->patch(route("tasks.update", [$project, $project->tasks->last()]), $attributes);
 
         $this->assertDatabaseHas("tasks", $attributes);
     }
@@ -109,7 +132,7 @@ class TasksTest extends TestCase
             "body" => "updated",
         ];
 
-        $this->patch(route("tasks.update", [$project, $project->tasks[0]]), $attributes)
+        $this->patch(route("tasks.update", [$project, $project->tasks->last()]), $attributes)
             ->assertStatus(403);
 
         $this->assertDataBaseMissing("tasks", $attributes);

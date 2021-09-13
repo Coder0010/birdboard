@@ -8,7 +8,7 @@ use App\Models\Project;
 use Facades\Tests\Setup\ProjectSetupFactory;
 use App\Http\Requests\ProjectRequest;
 
-class ProjectsTest extends TestCase
+class ProjectsFeatureTest extends TestCase
 {
 
     /** @test */
@@ -96,20 +96,26 @@ class ProjectsTest extends TestCase
     /** @test */
     public function authenticated_user_can_edit_a_project()
     {
-        // $this->withoutExceptionHandling();
+        $this->withoutExceptionHandling();
 
         $project = ProjectSetupFactory::ownedBy($this->signIn())->create();
 
         $this
             ->get(route("projects.edit", $project))->assertStatus(200);
 
-        $attributes = [
-            "notes" => "updated notes"
-        ];
+        $project->title       = "updated title";
+        $project->description = "updated description";
+        $project->notes       = "updated notes";
 
         $this
-            ->patch(route("projects.update", $project), $attributes)
+            ->patch(route("projects.update", $project), $project->toArray())
             ->assertRedirect(route("projects.show", $project));
+
+        $this->assertDatabaseHas("projects", [
+            "title"       => "updated title",
+            "description" => "updated description",
+            "notes"       => "updated notes",
+        ]);
 
     }
 

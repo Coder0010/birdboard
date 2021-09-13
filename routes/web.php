@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -12,6 +10,29 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+// class Car
+// {
+//     public static function model()
+//     {
+//         self::getModel();
+//     }
+
+//     protected static function getModel()
+//     {
+//         echo "I am a Car!";
+//     }
+// }
+
+// class Mercedes extends Car
+// {
+//     protected static function getModel()
+//     {
+//         echo "I am a Mercedes!";
+//     }
+// }
+// Car::model();
+// echo("\n");
+// Mercedes::model();
 
 Route::get('/', function () {
     return redirect()->route('home');

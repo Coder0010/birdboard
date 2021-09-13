@@ -31,8 +31,6 @@ class ProjectRequest extends FormRequest
             ];
         }elseif (request()->isMethod("patch")) {
             return [
-                'title'       => 'required|string',
-                'description' => 'required|string',
                 'notes'       => 'required|string',
             ];
         }

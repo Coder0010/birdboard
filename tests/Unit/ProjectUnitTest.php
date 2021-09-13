@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Collection;
 
-class ProjectTest extends TestCase
+class ProjectUnitTest extends TestCase
 {
     /** @test */
     public function project_belongs_to_owner()

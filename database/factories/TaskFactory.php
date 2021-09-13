@@ -23,8 +23,9 @@ class TaskFactory extends Factory
     public function definition()
     {
         return [
-            'body' => $this->faker->paragraph,
-            'project_id'  => Project::factory()->create()->id
+            'body'       => $this->faker->paragraph,
+            'project_id' => Project::factory(),
+            'completed'  => false,
         ];
     }
 }
