@@ -32,7 +32,7 @@ class ProjectsFeatureTest extends TestCase
             "description" => "",
         ]);
 
-        $this->post(route("projects.store"), $attributes)
+        $this->post(route("projects.store", $attributes))
             ->assertSessionHasErrors("title")
             ->assertSessionHasErrors("description");
     }
@@ -57,7 +57,7 @@ class ProjectsFeatureTest extends TestCase
         $this
             ->get(route("projects.create"))->assertStatus(200);
 
-        $this->get(route("projects.show", $project))
+        $this->get(route("projects.store", $project))
             ->assertSee($project["title"])
             ->assertSee($project["description"])
             ->assertSee($project["notes"])
@@ -98,9 +98,11 @@ class ProjectsFeatureTest extends TestCase
     {
         $this->withoutExceptionHandling();
 
-        $project = ProjectSetupFactory::ownedBy($this->signIn())->create();
+        $project = ProjectSetupFactory::create();
+        // $project = ProjectSetupFactory::ownedBy($this->signIn())->create();
 
         $this
+            ->actingAs($project->user)
             ->get(route("projects.edit", $project))->assertStatus(200);
 
         $project->title       = "updated title";
@@ -132,7 +134,9 @@ class ProjectsFeatureTest extends TestCase
 
         $project = ProjectSetupFactory::ownedBy($this->signIn())->create();
 
-        $this->delete(route("projects.destroy", $project));
+        $this
+            // ->actingAs($project->user)
+            ->delete(route("projects.destroy", $project));
 
         $this->assertDeleted("projects", $project->toArray());
 

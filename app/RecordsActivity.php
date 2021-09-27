@@ -48,10 +48,25 @@ trait RecordsActivity{
     public function recordActivity($description)
     {
         return $this->activities()->create([
+            'user_id'     => $this->activityOwner()->id,
+            'project_id'  => class_basename($this) === 'Project' ? $this->id : $this->project_id,
             'description' => $description,
             'changes'     => $this->activityChanges(),
-            'project_id'  => class_basename($this) === 'Project' ? $this->id : $this->project_id,
         ]);
+    }
+
+    public function activityOwner()
+    {
+        // return ($this->project ?? $this)->user;
+
+        // if(auth()->check()){
+        //     return auth()->user();
+        // }
+
+        $project = $this->project ?? $this;
+
+        return $project->user;
+
     }
 
     public function activityChanges()

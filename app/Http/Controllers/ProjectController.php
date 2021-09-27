@@ -79,7 +79,7 @@ class ProjectController extends Controller
     {
         $this->authorize('update', $project);
 
-        $project->update($request->all());
+        $project->update($request->validated());
 
         return redirect()->route('projects.show', $project);
     }
